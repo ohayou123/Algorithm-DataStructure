@@ -1,6 +1,7 @@
 # DataStructure && Algorithm
 Learning Data Structure and Algorithm
-参考：
+
+> 参考来源：
 - https://github.com/hustcc/JS-Sorting-Algorithm 
 - https://space.bilibili.com/28610170?from=search&seid=4736453583745868895
 
