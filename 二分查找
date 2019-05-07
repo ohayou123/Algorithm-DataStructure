@@ -1,0 +1,38 @@
+## 介绍
+二分查找是其输入是一个有序的元素列表（必须是有序的），如果查找的元素包含在列表中，二分查找返回其位置，否则返回NULL。
+
+满足条件
+- 存储在数组中
+- 有序排列
+- 适用于数量大,随元素增加，速度比简单查找更快
+
+有几个要注意的点：
+- 循环的判定条件是：low <= high
+- 为了防止数值溢出，mid = low + (high - low)/2
+- 当 A[mid]不等于target时，high = mid - 1或low = mid + 1
+## 步骤
+在有序的数组中，折半取中间值与目标值比较，小于取前半段，大于取后半段（递归）。
+
+## 复杂度
+时间复杂度：LogN
+
+## 代码
+```
+public static int bin_search(ArrayList<Integer> e, int number){
+    int low = 0;
+    int high = e.size()-1;
+    int mid;
+    while(high => low){
+       // mid = (low + high)/2;  这样做会low 和 hign 很大的清空下 下产生溢出
+       mid = low + (hign - low)/2;// 或者low+((hign - low)>>>1);
+        if (number == e.get(mid)){
+            return mid;
+        }else if (number < e.get(mid)){
+            high = mid;
+        }else if (number > e.get(mid)){
+            low = mid;
+        }
+    }
+    return 0;
+}
+```
