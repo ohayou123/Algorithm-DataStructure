@@ -1,4 +1,4 @@
-# DataStructure
+# DataStructure && Algorithm
 Learning Data Structure and Algorithm
 参考：
 - https://github.com/hustcc/JS-Sorting-Algorithm 
