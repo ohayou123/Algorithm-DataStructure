@@ -3,7 +3,8 @@ Learning Data Structure and Algorithm
 
 > 参考来源：
 - https://github.com/hustcc/JS-Sorting-Algorithm 
-- https://space.bilibili.com/28610170?from=search&seid=4736453583745868895
+- 公众号：5分钟学算法、程序员小灰
+- CSND、简书
 
 1. 数据结构
 2. 排序
