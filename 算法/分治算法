@@ -1,0 +1,399 @@
+[toc]
+
+## 概念
+分治算法（divide and conquer）的核心思想其实就是四个字，分而治之 ，也就是将原问题划分成n个规模较小，并且结构与原问题相似的子问题，递归地解决这些子问题，然后再合并其结果，就得到原问题的解。
+
+
+![](https://raw.githubusercontent.com/binbinbin5/myPics/master/imgs/fenzhi1.jpg)
+
+
+
+
+## 使用场景
+分治算法能解决的问题，一般需要满足下面这几个条件：
+
+1. 原问题与分解成的小问题具有相同的模式；
+
+2. 原问题分解成的子问题可以独立求解，子问题之间没有相关性，这一点是分治算法跟动态规划的明显区别，等我们讲到动态规划的时候，会详细对比这两种算法；
+
+3. 具有分解终止条件，也就是说，当问题足够小时，可以直接求解；
+
+4. 可以将子问题合并成原问题，而这个合并操作的复杂度不能太高，否则就起不到减小算法总体复杂度的效果了。
+
+
+## 基本步骤
+分治算法定义看起来有点类似递归的定义。关于分治和递归的区别，我们在排序（下）的时候讲过，分治算法是一种处理问题的思想，递归是一种编程技巧。实际上，分治算法一般都比较适合用递归来实现。分治算法的递归实现中，每一层递归都会涉及这样三个操作：
+
+- 分解：将原问题分解成一系列子问题；
+- 解决：递归地求解各个子问题，若子问题足够小，则直接求解；
+- 合并：将子问题的结果合并成原问题。
+
+
+
+##  分治算法应用举例分析
+
+### 如何编程求出一组数据的有序对个数或者逆序对个数呢？
+假设我们有n个数据，我们期望数据从小到大排列，那完全有序的数据的有序度就是n(n-1)/2，逆序度等于0；相反，倒序排列的数据的有序度就是0，逆序度是n(n-1)/2。除了这两种极端情况外，我们通过计算有序对或者逆序对的个数，来表示数据的有序度或逆序度。![](https://raw.githubusercontent.com/binbinbin5/myPics/master/imgs/ac5b059f7d02658179120.jpg)
+
+- 最笨的方法是，拿每个数字跟它后面的数字比较，看有几个比它小的。我们把比它小的数字个数记作k，通过这样的方式，把每个数字都考察一遍之后，然后对每个数字对应的k值求和，最后得到的总和就是逆序对个数。不过，这样操作的时间复杂度是O(n^2)。
+
+- 我们套用分治的思想来求数组A的逆序对个数。我们可以将数组分成前后两半A1和A2，分别计算A1和A2的逆序对个数K1和K2，然后再计算A1与A2之间的逆序对个数K3。那数组A的逆序对个数就等于K1+K2+K3。借助归并排序，归并排序中有一个非常关键的操作，就是将两个有序的小数组，合并成一个有序的数组。实际上，在这个合并的过程中，我们就可以计算这两个小数组的逆序对个数了。每次合并操作，我们都计算逆序对个数，把这些计算出来的逆序对个数求和，就是这个数组的逆序对个数了。![](https://raw.githubusercontent.com/binbinbin5/myPics/master/imgs/20190518141104.png)
+
+
+```
+private int num = 0; // 全局变量或者成员变量
+
+public int count(int[] a, int n) {
+  num = 0;
+  mergeSortCounting(a, 0, n-1);
+  return num;
+}
+
+private void mergeSortCounting(int[] a, int p, int r) {
+  if (p >= r) return;
+  int q = (p+r)/2;
+  mergeSortCounting(a, p, q);
+  mergeSortCounting(a, q+1, r);
+  merge(a, p, q, r);
+}
+
+private void merge(int[] a, int p, int q, int r) {
+  int i = p, j = q+1, k = 0;
+  int[] tmp = new int[r-p+1];
+  while (i<=q && j<=r) {
+    if (a[i] <= a[j]) {
+      tmp[k++] = a[i++];
+    } else {
+      num += (q-i+1); // 统计p-q之间，比a[j]大的元素个数
+      tmp[k++] = a[j++];
+    }
+  }
+  while (i <= q) { // 处理剩下的
+    tmp[k++] = a[i++];
+  }
+  while (j <= r) { // 处理剩下的
+    tmp[k++] = a[j++];
+  }
+  for (i = 0; i <= r-p; ++i) { // 从tmp拷贝回a
+    a[p+i] = tmp[i];
+  }
+}
+```
+### 二维平面上有n个点，如何快速计算出两个距离最近的点对？
+
+1. 预处理：根据输入点集S中的x轴进行排序，使用速度比较快的快速排序，然后将排序好的x坐标放到数组中，对应的y也放到对应的数组中。
+2. 按照排好序的x坐标，从中间划分成两个点数量差不多的区域，然后左区域继续划分成两个点数量差不多的区域，直到区域内点数量小于等于3个
+3. 合并两个区域时，判断是否含有跨区域的最小距离
+4. 穷举法直接两两计算距离，再与当前最小的距离作比较即可
+
+```
+1、快排
+
+2、
+dispart(x[0…n],y[0…n],low,high)
+    if high-low+1<=3  //如果区域内点的数量小于等于3个就计算点之间的距离
+      return   count(a,b,low,high)//返回区域内最短距离
+    else //如果大于三个点
+      mid=(low+high)/2  //取中间的下标继续分割区域
+      m1←dispart(x,y,low,mid)
+      m2←disport(x,y,mid+1,high) //返回区域内最短距离
+      mindistance=min(m1,m2)  //取左右两个区域的最短距离
+      return merge(x,y,low,mid,high,mindistance)  //合并区域，并考虑是否有跨区域的最短距离，返回此整个区域的最短距离。
+
+3、
+merge(x[0…n],y[0…n],low,mid,high,min)
+  edge1←x[mid]-min   edge2←x[mid]+min //取距离中轴长度为min的边界
+  for(i←mid;i>=low;i++) //确定下边界所在的位置，下标
+      if x[i]<=edge1
+         l←i  break
+  if i<low  l←low 
+
+  for(i←mid+1;i<=high;i++) //确定下边界所在的位置，下标
+      if x[i]>=edge2
+         h←i  break
+  if i>high h←high
+  
+  quick(y,x,mid+1,high)  //对右区域内的点进行y的快速排序
+
+ for(i←l;i<=mid;i++)  //以左区域的每一个点的坐标，找到上、下、右边距离点长度为min的区域边界，在这个区域内的点与此点计算距离
+  hl←y[i]-min  hh←y[i]+min  wide←x[i]+min
+  for(j←mid+1;j<=h;j++) 
+   if y[j]>=hl && y[j]<=hh && x[j]<=wide  //如果在这个小区域内计算距离
+     m←count;
+     if  m<min //如果小于最短距离
+        min←m;
+ return min;
+
+4、
+for(i←0;i<n;i++)
+ for(j←i+1;j<n;j++)
+   m←count;   //count函数计算两点距离
+   if m<min
+     min←m
+
+
+```
+
+
+### 有两个n * n的矩阵A，B，如何快速求解两个矩阵的乘积C=A*B？
+[分治算法：Strassen](https://blog.csdn.net/u012889441/article/details/54646878?from=groupmessage)
+
+### 分治思想在海量数据处理中的应用
+1. 比如，给10GB的订单文件按照金额排序这样一个需求，看似是一个简单的排序问题，但是因为数据量大，有10GB，而我们的机器的内存可能只有2、3GB这样子，无法一次性加载到内存，也就无法通过单纯地使用快排、归并等基础算法来解决了？
+
+    我们就可以先扫描一遍订单，根据订单的金额，将10GB的文件划分为几个金额区间。比如订单金额为1到100元的放到一个小文件，101到200之间的放到另一个文件，以此类推。这样每个小文件都可以单独加载到内存排序，最后将这些有序的小文件合并，就是最终有序的10GB订单数据了。
+
+
+我们就可以利用分治的思想。我们可以将海量的数据集合根据某种方法，划分为几个小的数据集合，每个小的数据集合单独加载到内存来解决，然后再将小数据集合合并成大数据集合。实际上，利用这种分治的处理思路，不仅仅能克服内存的限制，还能利用多线程或者多机处理，加快处理的速度。
+
+如果订单数据存储在类似GFS这样的分布式系统上，当10GB的订单被划分成多个小文件的时候，每个文件可以并行加载到多台机器上处理，最后再将结果合并在一起，这样并行处理的速度也加快了很多。不过，这里有一个点要注意，就是数据的存储与计算所在的机器是同一个或者在网络中靠的很近（比如一个局域网内，数据存取速度很快），否则就会因为数据访问的速度，导致整个处理过程不但不会变快，反而有可能变慢。
+
+### 静态TOP K
+从N个无序中找出K个最大最小值：大家都了解快速排序，快速排序利用分治法，每一次把数组分成较大和较小的两部分。
+
+我们在寻找第k大元素的时候，也可以利用这个思路，以某个元素A为基准，把大于于A的元素都交换到数组左边，小于A的元素都交换到数组右边。
+
+比如我们选择以元素7作为基准，把数组分成了左侧较大，右侧较小的两个区域，交换结果如下：
+![](https://raw.githubusercontent.com/binbinbin5/myPics/master/imgs/fenzhi395B20.png)
+
+
+包括元素7在内的较大元素有8个，但我们的k=5，显然较大元素的数目过多了。于是我们在较大元素的区域继续分治，这次以元素12位基准：
+![](https://raw.githubusercontent.com/binbinbin5/myPics/master/imgs/fenzhiF1DA2.png)
+
+
+
+这样一来，包括元素12在内的较大元素有5个，正好和k相等。所以，基准元素12就是我们所求的。
+
+这就是分治法的大体思想，这种方法的时间复杂度甚至优于小顶堆法，可以达到O（n）。有兴趣的小伙伴可以尝试用代码实现一下。
+### 二分查找（）
+- 二分查找是典型的分治算法的应用。需要注意的是，二分查找的前提是查找的数列是有序的。
+算法流程：
+- （1）选择一个标志 i 将集合分为二个子集合。
+- （2）判断标志 L(i) 是否能与要查找的值 des 相等，相等则直接返回。
+- （3）否则判断 L(i) 与 des 的大小。
+- （4）基于判断的结果决定下步是向左查找还是向右查找。
+- （5）递归继续上面的步骤。
+>通过二分查找的流程可以看出，二分查找是将原有序数列划分为左右两个子序列，然后在对两个子序列中的其中一个在进行划分，直至查找成功。
+
+```
+//代码实现：
+#include<string.h>
+#include<stdio.h>
+int k;
+int binarysearch(int a[],int x,int low,int high)//a表示需要二分的有序数组（升序），x表示需要查找的数字，low，high表示高低位
+{
+    if(low>high)
+    {
+        return -1;//没有找到
+    }
+    int mid=(low+high)/2;
+    if(x==a[mid])//找到x
+    {
+        k=mid;
+        return x;
+    }
+    else if(x>a[mid]) //x在后半部分
+    {
+        binarysearch(a,x,mid+1,high);//在后半部分继续二分查找
+    }
+    else//x在前半部分
+    {
+        binarysearch(a,x,low,mid-1);
+    }
+}
+
+int main()
+{
+    int a[10]={1,2,3,4,5,6,7,8,9,10};
+    printf("请输入需要查找的正数字：\n");
+    int x;
+    scanf("%d",&x);
+    int r=binarysearch(a,x,0,9);
+    if(r==-1)
+    {
+        printf("没有查到\n");
+    }
+    else
+    {
+        printf("查到了,在数列的第%d个位置上\n",k+1);
+    }
+    return 0;
+}
+```
+
+
+### 全排列问题
+问题描述：
+>有1，2，3，4个数，问你有多少种排列方法，并输出排列。
+
+问题分析：
+>若采用分治思想进行求解，首先需要把大问题分解成很多的子问题，大问题是所有的排列方法。那么我们分解得到的小问题就是以 1 开头的排列，以 2 开头的排列，以 3 开头的排列，以 4 开头的排列。现在这些问题有能继续分解，比如以 1 开头的排列中，只确定了 1 的位置，没有确定 2 ，3 ，4 的位置，把 2，3，4 三个又看成大问题继续分解，2 做第二个，3 做第二个，或者 4 做第二个。一直分解下去，直到分解成的子问题只有一个数字的时候，不能再分解。只有一个数的序列只有一种排列方式，则子问题求解容易的多。
+
+```
+代码实现：
+public class Test {
+    public static void main(String[] args) {
+        int[] arr = { 1, 2, 3, 4 };
+        fullSort(arr, 0, arr.length - 1);
+    }
+    public static void fullSort(int[] arr, int start, int end) {
+        // 递归终止条件
+        if (start == end) {
+            for (int i : arr) {
+                System.out.print(i);
+            }
+            System.out.println();
+            return;
+        }
+        for (int i = start; i <= end; i++) {
+            swap(arr, i, start);
+            fullSort(arr, start + 1, end);
+            swap(arr, i, start);
+        }
+    }
+
+    private static void swap(int[] arr, int i, int j) {
+        int tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
+    }
+}
+```
+
+
+### 归并排序
+>归并排序：归并（Merge）排序法是将两个（或两个以上）有序表合并成一个新的有序表，即把待排序序列分为若干个子序列，每个子序列是有序的。然后再把有序子序列合并为整体有序序列。即先划分为两个部分，最后进行合并。
+
+```
+伪代码：
+算法 MergeSort(A, p, r)
+输入：数组A[p...r]
+输出：有序数组A
+if(p < r)
+    then q <- (p+r)/2//折半划分
+        MergeSort(A, p ,q)//子问题1
+        MergeSort(A, p ,q)//子问题2
+        Merge(A, p ,q, r)//合并求解
+
+代码实现：
+public class MergeSort {
+    //两路归并算法，两个排好序的子序列合并为一个子序列
+    public void merge(int []a,int left,int mid,int right){
+        int []tmp=new int[a.length];//辅助数组
+        int p1=left,p2=mid+1,k=left;//p1、p2是检测指针，k是存放指针
+        while(p1<=mid && p2<=right){
+            if(a[p1]<=a[p2])
+                tmp[k++]=a[p1++];
+            else
+                tmp[k++]=a[p2++];
+        }
+
+        while(p1<=mid) tmp[k++]=a[p1++];//如果第一个序列未检测完，直接将后面所有元素加到合并的序列中
+        while(p2<=right) tmp[k++]=a[p2++];//同上
+
+        //复制回原素组
+        for (int i = left; i <=right; i++) 
+            a[i]=tmp[i];
+    }
+
+    public void mergeSort(int [] a,int start,int end){
+        if(start<end){//当子序列中只有一个元素时结束递归
+            int mid=(start+end)/2;//划分子序列
+            mergeSort(a, start, mid);//对左侧子序列进行递归排序
+            mergeSort(a, mid+1, end);//对右侧子序列进行递归排序
+            merge(a, start, mid, end);//合并
+        }
+    }
+}
+```
+
+### 快速排序
+>快速排序的基本思想：当前待排序的无序区为 A[low..high] ，利用分治法可将快速排序的基本思想描述为：
+1. 分解：
+>在A[low..high]中任选一个记录作为基准(pivot)，以此基准将当前无序区划分为左、右两个较小的子区间R[low..pivotpos-1) 和 R[pivotpos+1..high] ，并使左边子区间中所有记录的关键字均小于等于基准记录(不妨记为pivot)的关键字 pivot.key，右边的子区间中所有记录的关键字均大于等于pivot.key，而基准记录pivot则位于正确的位置( pivotpos )上，它无须参加后续的排序。
+2. 求解：
+
+通过递归调用快速排序对左、右子区间R[low..pivotpos-1]和R[pivotpos+1..high]快速排序。
+3. 合并：
+
+因为当"求解"步骤中的两个递归调用结束时，其左、右两个子区间已有序。对快速排序而言，"组合"步骤无须做什么，可看作是空操作。
+
+```
+代码实现：
+#include <iostream>
+using namespace std;
+void QuickSort(int arr[], int low, int high){
+    if (high <= low) return;
+    int i = low;
+    int j = high + 1;
+    int key = arr[low];
+    while (true)
+    {
+        /*从左向右找比key大的值*/
+        while (arr[++i] < key)
+        {
+            if (i == high){
+                break;
+            }
+        }
+        /*从右向左找比key小的值*/
+        while (arr[--j] > key)
+        {
+            if (j == low){
+                break;
+            }
+        }
+        if (i >= j) break;
+        /*交换i,j对应的值*/
+        int temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+    }
+    /*中枢值与j对应值交换*/
+    int temp = arr[low];
+    arr[low] = arr[j];
+    arr[j] = temp;
+    QuickSort(arr, low, j - 1);
+    QuickSort(arr, j + 1, high);
+}
+```
+
+
+### 汉诺塔
+汉诺塔（Hanoi Tower）问题也是一个经典的递归问题，该问题描述如下：
+汉诺塔问题：古代有一个梵塔，塔内有三个座A、B、C，A座上有64个盘子，盘子大小不等，大的在下，小的在上。有一个和尚想把这个盘子从A座移到B座，但每次只能允许移动一个盘子，并且在移动过程中，3个座上的盘子始终保持大盘在下，小盘在上。
+
+两个盘子
+![](https://raw.githubusercontent.com/binbinbin5/myPics/master/imgs/hannuota.gif)
+三个盘子
+![](https://raw.githubusercontent.com/binbinbin5/myPics/master/imgs/hannuota2.gif)
+1. ①  如果只有 1 个盘子，则不需要利用 B 塔，直接将盘子从 A 移动到 C 。
+2. ② 如果有 2 个盘子，可以先将盘子 2 上的盘子 1 移动到 B ；将盘子 2 移动到 C ；将盘子 1 移动到 C 。这说明了：可以借助 B 将 2 个盘子从 A 移动到 C ，当然，也可以借助 C 将 2 个盘子从 A 移动到 B 。
+3. ③ 如果有 3 个盘子，那么根据 2 个盘子的结论，可以借助 C 将盘子 3 上的两个盘子从 A 移动到 B ；将盘子 3 从 A 移动到 C ，A 变成空座；借助 A 座，将 B 上的两个盘子移动到 C 。
+4. ④ 以此类推，上述的思路可以一直扩展到 n 个盘子的情况，将将较小的 n-1个盘子看做一个整体，也就是我们要求的子问题，以借助 B 塔为例，可以借助空塔 B 将盘子A上面的 n-1 个盘子从 A 移动到 B ；将A 最大的盘子移动到 C ， A 变成空塔；借助空塔 A ，将 B 塔上的 n-2 个盘子移动到 A，将 C 最大的盘子移动到 C， B 变成空塔。。。
+
+```
+代码实现：
+    public static void hanoi(int n, String sourceTower, String tempTower, String targetTower) {
+        if (n == 1) {
+            //如果只有一个盘子1，那么直接将其从sourceTower移动到targetTower
+            move(n, sourceTower, targetTower);
+        } else {
+            //将（盘子n-1~盘子1）由sourceTower经过targetTower移动到tempTower
+            hanoi(n - 1, sourceTower, targetTower, tempTower);
+            //移动盘子n由sourceTower移动到targetTower
+            move(n, sourceTower, targetTower);
+            //把之前移动到tempTower的（盘子n-1~盘子1），由tempTower经过sourceTower移动到targetTower
+            hanoi(n - 1, tempTower, sourceTower, targetTower);
+        }
+    }
+
+    //盘子n的从sourceTower->targetTower的移动
+    private static void move(int n, String sourceTower, String targetTower) {
+        System.out.println("第" + n + "号盘子 move:" + sourceTower + "--->" + targetTower);
+    }
+```
+
+
+## 总结分析
+>分治法将规模为 n 的问题分成 k 个规模为 n／m 的子问题去解。设分解阀值 n0 = 1 ，且 adhoc 解规模为 1 的问题耗费 1 个单位时间。再设将原问题分解为 k 个子问题以及用 merge 将 k 个子问题的解合并为原问题的解需用 f(n) 个单位时间。用T(n)表示该分治法解规模为 |P| = n 的问题所需的计算时间，则有：T（n）= k T(n/m) + f(n)
