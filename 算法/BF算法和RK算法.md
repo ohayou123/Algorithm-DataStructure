@@ -82,10 +82,41 @@ RK算法的思路是这样的：我们通过哈希算法对主串中的n-m+1个�
 
 ## 解答
 
-![image](https://note.youdao.com/yws/res/34807/AA77DE1584EB4390B43196DCFAA20D6A)假设有下面这样一个二维字符串矩阵（图中的主串），如何在其中查找另一个二维字符串矩阵（图中的模式串）呢？
+![image](AA77DE1584EB4390B43196DCFAA20D6A)假设有下面这样一个二维字符串矩阵（图中的主串），如何在其中查找另一个二维字符串矩阵（图中的模式串）呢？
 
 1. 算出模式串ca的哈希值，我们用（0-26）替换（a-z），那么 ca = 26*2+0 = 52
 
 2. 主串分别取行其计算哈希值（计算的时候根据规律快速从大到小计算），与1中对比。
 
 3. 2中成功，直接取对应行下的两个字母与ef的哈希进行对比，成功则用字母再进行对比。失败则回到2继续比较。
+
+```
+ public static boolean findVal(char[][] tr,char[][] obj){
+        int i = tr.length;//lie
+        int j = tr[0].length;//行
+
+        if(i<obj.length||j<obj[0].length){
+            return false;
+        }
+        int objNum1 = (obj[0][0]-97)*2+(obj[0][1]-97)*3;//1
+        int objNum2 = (obj[1][0]-97)*2+(obj[1][1]-97)*3;
+
+        int x = 0,y=0;
+        while(x<i-1&&y<j-1){
+            int temp = (tr[x][y]-97)*2+(tr[x][y+1]-97)*3;
+            int temp2 =(tr[x+1][y]-97)*2+(tr[x+1][y+1]-97)*3;
+            if(temp == objNum1&&objNum2 ==temp2 ){//2
+                if(tr[x][y]==obj[0][0] && tr[x][y+1]==obj[0][1] && tr[x+1][y+1]==obj[1][1]&&tr[x+1][y]==obj[1][0]){//3
+                    return true;
+                }
+            }
+            x++;
+            if(x == i-1&&y<j-1){
+                x=0;
+                y++;
+            }
+
+        }
+        return false;
+    }
+```
